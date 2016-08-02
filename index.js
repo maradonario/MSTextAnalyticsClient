@@ -2,6 +2,12 @@ var http = require('http');
 var express = require('express');
 var credentials = require('./credentials.js');
 var app = express();
+var mongoose = require('mongoose');
+var opts = {
+    server : {
+        socketOptions : {keepAlive : 1}
+    }
+};
 // Set port to listen to
 app.set('port', process.env.PORT || 3000);
 var handlebars = require('express-handlebars')
@@ -13,6 +19,62 @@ app.use(require('body-parser').urlencoded({ extended : true}));
 var rp = require('request-promise');
 
 app.use(express.static(__dirname + '/public'));
+
+switch (app.get('env')) {
+    case 'development':
+        mongoose.connect(credentials.mongo.development.connection, opts);
+        break;
+    case 'production':
+        mongoose.connect(credentials.mongo.development.connection, opts);   
+        break;
+    default:
+        throw new Error('unknown execution environemnt ' + app.get('env'));
+}
+
+var FAQ = require('./models/faq.js');
+FAQ.find(function(err, faqs){
+    if (err) {
+        return console.error(err);
+    }
+    if (faqs.length) {
+        return;
+    }
+
+    new FAQ({
+        name : 'MyScheduling',
+        links : ['https://myscheduling.accenture.com'],
+        message : 'Open roles can be found here %s',
+        tags : ['roles', 'role', 'assignments', 'projects', 'project', 'staffed']
+    }).save();
+
+    new FAQ({
+        name : 'Talent Communities',
+        links : ['https://avanade.sharepoint.com/sites/talentcommunities/pages/tc-home.aspx'],
+        message : 'Talent communities can be found here %s',
+        tags : ['talent communities', 'talent community', 'talent']
+    }).save();
+
+    new FAQ({
+        name : 'Global Holidays',
+        links : ['https://avanade.sharepoint.com/sites/HR/Pages/GlobalHolidays.aspx'],
+        message : 'Check out Avanade Global Holidays here %s',
+        tags : ['holidays', 'avanade holidays', 'holiday']
+    }).save();        
+
+    new FAQ({
+        name : 'Extended Benefits Balance',
+        links : ['https://enterprisereports.avanade.com/EA_REPORTS/Pages/Report.aspx?ItemPath=/HR/Extended+Benefits+Reports/MyTE_Extended_Benefits_by_Employee'],
+        message : 'You can find your extended benefits balance here %s',
+        tags : ['extended benefits balance', 'extended benefits' ]
+    }).save();    
+
+    new FAQ({
+        name : 'Benefits',
+        links : ['https://avanade.sharepoint.com/sites/HR/Pages/GlobalHolidays.aspx'],
+        message : 'Check out the HR Benefits Hub %s',
+        tags : ['benefits', 'avanade benefits']
+    }).save();        
+});
 
 app.get('/', function(req, res){
     res.render('home');
@@ -55,8 +117,19 @@ app.post('/process', function(req, res){
                 // POST succeeded... 
                 console.log(parsedBody);
                 console.log(parsedBody.documents[0].keyPhrases);
+                FAQ.find({ tags : { "$in" : [parsedBody.documents[0].keyPhrases]}}, function(err, faqs){
+                    // nothing found
+                    if (!faqs.length) {
+                        res.send({success : true, question : req.body.question, keyPhrases : parsedBody.documents[0].keyPhrases, answer : 'Could not find an answer for you :-(', found : false});
+                }
+                    else {
+                        console.log(faqs[0]);
+                        console.log('Errors: ' + err);
+                        console.log('links array: ' + faqs[0].links);
+                        res.send({success : true, question : req.body.question, keyPhrases : parsedBody.documents[0].keyPhrases, answer : faqs[0].message, link : faqs[0].links[0], found : true});
+                    }
 
-                res.send({success : true, question : req.body.question, keyPhrases : parsedBody.documents[0].keyPhrases})
+                });
             })
             .catch(function (err) {
                 // POST failed... 

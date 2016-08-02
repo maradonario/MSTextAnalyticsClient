@@ -27,7 +27,12 @@
                 data: $(this).serialize(),
                 success: function(data) {
                     if(data.success) {
-                        //<span class="label label-primary">Primary</span>
+                        if (data.found) {
+                        $container.prepend('<h3>Answer:<i>' + data.answer + '<a href=' + data.link + '>' + data.link + '</a></i></h3>');
+                        }
+                        else {
+                            $container.prepend('<h3>Answer:<i>' + data.answer + '</i></h3>');
+                        }
                         data.keyPhrases.forEach(function(item, index) {
                             $container.prepend('<span class="label label-primary">' + item +'</span>');
                         });
