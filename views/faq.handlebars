@@ -1,0 +1,46 @@
+<div class="jumbotron">
+    <h1>Go ahead and ask a question!</h1>
+    <p>For example: <small><i>Where can I find open roles?</i></small></p>
+    <div class="row">
+    <div class="col-lg-6">
+        <form class="form-horizontal questionFAQ" role="form" action="/process" method="POST">      
+            <div class="input-group">
+                <input name="question" type="text" class="form-control" placeholder="Ask a question..." required>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit">Go!</button>
+                </span>
+            </div><!-- /input-group -->
+        </form>
+    </div><!-- /.col-lg-6 -->
+    </div><!-- /.row -->
+    <div class="responses"></div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('.questionFAQ').on('submit', function(evt) {
+            evt.preventDefault();
+            var action = $(this).attr('action');
+            var $container = $('.responses');
+            $.ajax({
+                url: action,
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(data) {
+                    if(data.success) {
+                        //<span class="label label-primary">Primary</span>
+                        data.keyPhrases.forEach(function(item, index) {
+                            $container.prepend('<span class="label label-primary">' + item +'</span>');
+                        });
+                        $container.prepend('<h3>Question:<i>' + data.question + '</i></h3>');
+
+                    } else {
+                        $container.prepend('<h2>Problem with the request. Try Again!</h2>');
+                    }
+                },
+                error: function() {
+                    $container.prepend('<h2>MAJOR Problem with the request. Try Again!</h2>');
+                }
+            });
+        });
+    });
+</script>

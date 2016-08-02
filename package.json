@@ -1,0 +1,27 @@
+{
+  "name": "MSTextAnalyticsClient",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maradonario/MSTextAnalyticsClient.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maradonario/MSTextAnalyticsClient/issues"
+  },
+  "homepage": "https://github.com/maradonario/MSTextAnalyticsClient",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "cognitive-services": "^0.1.0",
+    "express": "^4.14.0",
+    "express-handlebars": "^3.0.0",
+    "request": "^2.74.0",
+    "request-promise": "^4.1.0"
+  }
+}
